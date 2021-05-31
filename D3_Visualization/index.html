@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
+  <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
+  <script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script src="https://d3js.org/topojson.v1.min.js"></script>
+  <script src="https://d3js.org/d3-geo.v1.min.js"></script>
+  <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.10.0/mapbox-gl.js'></script>
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.10.0/mapbox-gl.css' rel='stylesheet' />
+  
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+
+  <script src="mapbox.js"></script>
+  <script src="crosstabbars.js"></script>
+  <script src="linechart.js"></script>
+  <script src="heatmapchart.js"></script>
+  <script src="bound.js"></script>
+  <script src="radialchart.js"></script>
+
+   
+  <style src="style.css"></style>
+
+  <style>
+    body {
+      margin: 0;
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    }
+
+    #loading {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      font: 40px 'Helvetica Neue';
+      text-align:center;
+      margin-left: auto;
+      margin-right: auto;
+      background-color: lightgrey;
+    }
+
+    #map {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+
+
+    svg {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+
+    .map-overlay {
+      font: 12px/16px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+      position: absolute;
+      width: 300px;
+      top: 0;
+      left: 0;
+      padding: 5px;
+    }
+  
+    .map-overlay .map-overlay-inner {
+      background-color: #fff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
+      padding: 5px;
+      margin-bottom: 5px;
+    }
+  
+    .map-overlay h2 {
+      line-height: 24px;
+      display: block;
+      margin: 0 0 10px;
+    }
+  
+    .map-overlay .legend .bar {
+      height: 10px;
+      width: 100%;
+      background: linear-gradient(to right, #fca107, #7f3121);
+    }
+  
+    .map-overlay input {
+      background-color: transparent;
+      display: inline-block;
+      width: 100%;
+      position: relative;
+      margin: 0;
+      cursor: ew-resize;
+    }
+
+    .chartpanel {
+      font: 12px/16px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+      position: absolute;
+      width: 300px;
+      top: 0;
+      right: 0;
+      padding: 10px;
+      float:right;
+      height: 100%;
+      width: 50%;
+      background-color: rgba(211,211,211,0.5);;
+    }
+
+    .crosstabchart {
+      float:right;
+      height: 410px;
+      width: 100%;
+      padding: 5px;
+    }
+
+    .linechart {
+      float:right;
+      clear:right;
+      height: 400px;
+      width: 100%;
+      padding: 5px;      
+    }
+
+    .radialchart {
+      float:right;
+      clear:right;
+      height: 400px;
+      width: 100%;
+      padding: 10px;      
+    }
+
+
+    .axisWhite line{
+      stroke: white;
+    }
+
+    .axisWhite path{
+      stroke: white;
+    }
+
+    .axisWhite text{
+      fill: white;
+      font-size: large;
+    }
+
+
+
+    /* below are for the toggle on off buttons */
+    #menu {
+    background: #fff;
+    position: absolute;
+    z-index: 1;
+    top: 100px;
+    right: 10px;
+    border-radius: 3px;
+    width: 120px;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    font-family: 'Open Sans', sans-serif;
+    }
+    
+    #menu a {
+    font-size: 13px;
+    color: #404040;
+    display: block;
+    margin: 0;
+    padding: 0;
+    padding: 10px;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+    text-align: center;
+    }
+    
+    #menu a:last-child {
+    border: none;
+    }
+    
+    #menu a:hover {
+    background-color: #f8f8f8;
+    color: #404040;
+    }
+    
+    #menu a.active {
+    background-color: #3887be;
+    color: #ffffff;
+    }
+    
+    #menu a.active:hover {
+    background: #3074a4;
+    } 
+
+
+
+  </style>
+</head>
+
+<body>
+
+  <div id="loading">Loading Crime Data Please Wait
+    <!-- The 3 loading dots -->
+    <div class="spinner-grow spinner-grow-sm" role="status"></div>
+    <div class="spinner-grow spinner-grow-sm" role="status"></div>
+    <div class="spinner-grow spinner-grow-sm" role="status"></div> 
+  </div>
+
+
+  <div id="map"></div>
+  <nav id="menu"></nav>
+  <!--
+  //Removed. Created by D3 instead
+  <div class="chartpanel">
+    <div class="crosstabchart"></div>
+    <div class="linechart"></div>
+  </div>
+  -->
+  <div class="map-overlay top">
+    <div class="map-overlay-inner">
+      <h2>Chicago Crimes in 2020</h2>
+      <div id="legend" class="legend">
+        <div class="bar"></div>
+        <div>Density</div>
+      </div>
+      <!-- Rectangular switch -->
+      <div style='display: inline-block;'>
+          AutoPlay 
+          <input type='checkbox' style='display: inline-block;' onclick="AutoFunc()" checked>
+        
+      </div>
+      <p>
+        <label for="amount">Date range:</label>
+        <input type="text" id="amount" style="border: 0; color: #f6931f; font-weight: bold;" size="100" />
+      </p>
+      <div id="slider-range"></div>
+    </div>    
+  </div>
+  
+  <script>
+    //URL will be axios fetch
+    var url = "crimes"
+
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZW5qYWxvdCIsImEiOiJjaWhtdmxhNTIwb25zdHBsejk0NGdhODJhIn0.2-F2hS_oTZenAWc0BMf_uw'
+    
+    //Setup mapbox-gl map
+      var map = new mapboxgl.Map({
+        container: 'map', // container id
+        style: 'mapbox://styles/mapbox/dark-v10',
+        center: [-87.4714, 41.8317],
+        zoom: 10.00,
+      });
+    
+
+    //fetch geojson data
+    d3.json(url, function (err, data) {
+      // Create a month property value based on time
+      // used to filter against.
+      data.features = data.features.map(function (d) {
+        d.properties.month = new Date(d.properties.date).getMonth();
+        d.properties.hours = new Date(d.properties.date).getHours();
+        return d;
+      });
+
+      //Load from mapbox.js
+      runMapbox(map, data);
+
+      //Remove Loading screen and add div boxes for charts
+      d3.select("#loading").remove()
+      d3.select('body')
+        .append('div')
+        .attr('class', 'chartpanel')
+        .style('display', 'none')
+        .attr('id', 'chartpanelid')
+      
+      d3.select('div.chartpanel')
+        .append('div')
+        .attr('class', 'crosstabchart')
+        .attr('id', 'ctcdivid')
+
+      d3.select('div.chartpanel')
+        .append('br')
+
+      d3.select('div.chartpanel')
+        .append('div')
+        .attr('class', 'linechart')
+        .attr('id', 'lcdivid')
+
+      d3.select('div.chartpanel')
+        .append('div')
+        .attr('class', 'radialchart')
+        .attr('id', 'rcdivid')
+
+      d3.select('div.chartpanel')
+        .append('div')
+        .attr('class', 'heatmapchart')
+        
+
+      //load from bound.js
+      runD3(data);
+    });
+
+  </script>
+  
+
+</body>
